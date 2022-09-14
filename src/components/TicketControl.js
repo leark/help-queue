@@ -6,6 +6,7 @@ import TicketDetail from './TicketDetail';
 import PropTypes from 'prop-types';
 import EditTicketForm from './EditTicketForm';
 import * as a from './../actions';
+import { formatDistanceToNow } from 'date-fns';
 
 class TicketControl extends React.Component {
   constructor(props) {
@@ -17,6 +18,29 @@ class TicketControl extends React.Component {
     };
     this.handleClick = this.handleClick.bind(this);
   }
+
+  componentDidMount() {
+    this.waitTimeUpdateTimer = setInterval(
+      () => this.updateTicketElapsedWaitTime(),
+      60000
+    );
+  }
+
+  componentWillUnmount() {
+    // console.log('component unmounted!');
+    clearInterval(this.waitTimeUpdateTimer);
+  }
+
+  updateTicketElapsedWaitTime = () => {
+    const { dispatch } = this.props;
+    Object.values(this.props.mainTicketList).forEach((ticket) => {
+      const newFormattedWaitTime = formatDistanceToNow(ticket.timeOpen, {
+        addSuffix: true,
+      });
+      const action = a.updateTime(ticket.id, newFormattedWaitTime);
+      dispatch(action);
+    });
+  };
 
   handleClick = () => {
     if (this.state.selectedTicket != null) {
